@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>كرمشة</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --beige:#f2d3af;
+  --wine:#531320;
+  --wine-light:#7a1e30;
+  --wine-dark:#3a0d16;
+}
+body{
+  background-color:var(--beige);
+  font-family:"Tajawal",sans-serif;
+  direction:rtl;
+  min-height:100vh;
+}
+.page{display:none;flex-direction:column;min-height:100vh;}
+.page.active{display:flex;}
+
+.bg-pattern{
+  position:fixed;top:0;left:0;width:100%;height:100%;
+  background-size:300px;
+  background-repeat:repeat;
+  opacity:0.08;
+  pointer-events:none;
+  z-index:0;
+}
+
+.header{
+  background:var(--wine);
+  color:var(--beige);
+  text-align:center;
+  padding:1rem;
+  position:relative;
+  z-index:10;
+  flex-shrink:0;
+}
+.brand-name{font-size:1.6rem;font-weight:800;letter-spacing:1px;}
+.header-subtitle{font-size:0.85rem;opacity:0.8;margin-top:0.2rem;}
+
+.hamburger-btn{
+  position:absolute;right:1rem;top:50%;transform:translateY(-50%);
+  background:rgba(242,211,175,0.15);
+  border:1.5px solid rgba(242,211,175,0.5);
+  border-radius:10px;
+  padding:0.5rem;
+  cursor:pointer;
+  display:flex;flex-direction:column;gap:5px;
+  z-index:20;
+}
+.hamburger-btn span{
+  display:block;width:24px;height:2px;
+  background:var(--beige);border-radius:2px;
+  transition:all 0.3s;
+}
+.hamburger-btn.open span:nth-child(1){transform:rotate(45deg) translate(5px,5px);}
+.hamburger-btn.open span:nth-child(2){opacity:0;}
+.hamburger-btn.open span:nth-child(3){transform:rotate(-45deg) translate(5px,-5px);}
+
+.back-btn{
+  position:absolute;left:1rem;top:50%;transform:translateY(-50%);
+  background:rgba(242,211,175,0.15);
+  border:1.5px solid rgba(242,211,175,0.5);
+  border-radius:10px;
+  padding:0.4rem 0.8rem;
+  color:var(--beige);font-size:0.9rem;font-weight:600;
+  cursor:pointer;display:none;align-items:center;gap:4px;
+}
+.back-btn.visible{display:flex;}
+
+.overlay{
+  position:fixed;top:0;left:0;width:100%;height:100%;
+  background:rgba(0,0,0,0.5);
+  z-index:100;
+  display:none;opacity:0;transition:opacity 0.3s;
+}
+.overlay.open{display:block;opacity:1;}
+.drawer{
+  position:fixed;top:0;right:0;width:75%;max-width:300px;height:100%;
+  background:var(--wine);
+  z-index:200;
+  transform:translateX(100%);
+  transition:transform 0.35s cubic-bezier(0.4,0,0.2,1);
+  display:flex;flex-direction:column;
+  overflow-y:auto;
+}
+.drawer.open{transform:translateX(0);}
+.drawer-header{
+  padding:1.5rem 1rem 1rem;
+  border-bottom:1px solid rgba(242,211,175,0.2);
+  text-align:center;
+}
+.drawer-brand{color:var(--beige);font-size:1.2rem;font-weight:800;}
+.drawer-nav{padding:1rem 0;flex:1;}
+.drawer-item{
+  display:flex;align-items:center;gap:0.75rem;
+  padding:0.85rem 1.25rem;
+  color:var(--beige);
+  font-size:0.95rem;font-weight:600;
+  cursor:pointer;
+  border-right:3px solid transparent;
+  transition:all 0.2s;
+}
+.drawer-item:hover,.drawer-item.active-item{
+  background:rgba(242,211,175,0.12);
+  border-right-color:var(--beige);
+}
+.drawer-item-icon{font-size:1.3rem;width:28px;text-align:center;}
+.drawer-close{
+  position:absolute;top:1rem;left:1rem;
+  background:rgba(242,211,175,0.15);
+  border:1px solid rgba(242,211,175,0.3);
+  border-radius:8px;padding:0.3rem 0.6rem;
+  color:var(--beige);font-size:1.1rem;cursor:pointer;
+}
+
+.main-content{flex:1;position:relative;z-index:1;padding:1rem;}
+
+.home-grid{
+  display:grid;grid-template-columns:repeat(2,1fr);
+  gap:12px;padding:1rem;
+}
+.home-card{
+  background:var(--wine);
+  border-radius:14px;
+  overflow:hidden;
+  cursor:pointer;
+  transition:transform 0.15s;
+  box-shadow:0 2px 8px rgba(83,19,32,0.2);
+}
+.home-card:active{transform:scale(0.97);}
+
+/* الكارت يتمدد بحسب الصورة */
+.home-card-thumb{
+  width:100%;
+  background:#f9efe4;
+  display:block;
+  line-height:0;
+}
+.home-card-thumb img{
+  width:100%;
+  height:auto;
+  display:block;
+  object-fit:unset;
+}
+
+.home-card-label{
+  color:var(--beige);font-size:0.9rem;font-weight:700;
+  padding:0.6rem 0.75rem;text-align:center;
+}
+
+.products-grid{
+  display:grid;grid-template-columns:1fr;
+  gap:12px;padding:0 0 1rem;
+}
+.product-card{
+  background:white;
+  border-radius:14px;overflow:hidden;
+  box-shadow:0 2px 8px rgba(83,19,32,0.1);
+  display:flex;
+  flex-direction:column;
+}
+.product-img-wrap{
+  width:100%;
+  background:#f9efe4;
+  display:block;
+  line-height:0;
+}
+.product-img-wrap img{
+  width:100%;
+  height:auto;
+  display:block;
+  object-fit:unset;
+}
+.product-img-placeholder{
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+  color:rgba(83,19,32,0.3);font-size:0.75rem;text-align:center;
+  padding:2rem 0.5rem;
+}
+.product-img-placeholder .upload-icon{font-size:2rem;opacity:0.5;}
+.product-info{padding:0.65rem 0.75rem;}
+.product-name{color:var(--wine);font-size:0.9rem;font-weight:700;margin-bottom:0.3rem;}
+.product-price{
+  color:var(--wine);font-size:0.85rem;font-weight:600;
+  background:var(--beige);
+  border-radius:6px;padding:0.2rem 0.5rem;
+  display:inline-block;
+}
+.sizes-row{
+  display:flex;gap:6px;margin-top:0.4rem;flex-wrap:wrap;
+}
+.size-badge{
+  display:flex;flex-direction:column;align-items:center;
+  background:var(--beige);border-radius:8px;
+  padding:0.25rem 0.5rem;flex:1;min-width:60px;
+  border:1.5px solid rgba(83,19,32,0.15);
+}
+.size-label{
+  font-size:0.65rem;color:var(--wine-light);font-weight:700;
+  text-transform:uppercase;letter-spacing:0.3px;
+}
+.size-price{
+  font-size:0.82rem;color:var(--wine);font-weight:800;
+  white-space:nowrap;
+}
+
+.footer{
+  background:var(--wine);padding:1rem;
+  display:flex;justify-content:center;gap:1.5rem;
+  flex-wrap:wrap;z-index:10;position:relative;
+}
+.social-btn{
+  display:flex;flex-direction:column;align-items:center;
+  color:var(--beige);text-decoration:none;
+  font-size:0.75rem;gap:5px;cursor:pointer;
+}
+.social-btn:hover{opacity:0.75;}
+.social-icon{
+  width:44px;height:44px;border-radius:50%;
+  background:rgba(242,211,175,0.15);
+  border:1.5px solid rgba(242,211,175,0.4);
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.4rem;
+}
+.social-icon i{color:var(--beige);}
+.address-bar{
+  background:var(--wine-dark);color:rgba(242,211,175,0.85);
+  text-align:center;padding:0.5rem 1rem;font-size:0.8rem;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  z-index:10;position:relative;
+}
+.address-bar i{color:var(--beige);font-size:16px;}
+</style>
+</head>
+<body>
+
+<div class="bg-pattern"></div>
+
+<!-- SIDE DRAWER -->
+<div class="overlay" id="overlay" onclick="closeDrawer()"></div>
+<div class="drawer" id="drawer">
+  <button class="drawer-close" onclick="closeDrawer()">✕</button>
+  <div class="drawer-header">
+    <div class="drawer-brand">كرمشة</div>
+  </div>
+  <nav class="drawer-nav">
+    <div class="drawer-item" onclick="goHome();closeDrawer()"><span class="drawer-item-icon">🏠</span>الرئيسية</div>
+    <div class="drawer-item" onclick="showSection('khalia');closeDrawer()"><span class="drawer-item-icon">🍯</span>خلية نحل</div>
+    <div class="drawer-item" onclick="showSection('sambosa');closeDrawer()"><span class="drawer-item-icon">🥟</span>سمبوسة</div>
+    <div class="drawer-item" onclick="showSection('fatayer');closeDrawer()"><span class="drawer-item-icon">🫓</span>فطائر</div>
+    <div class="drawer-item" onclick="showSection('makramsha');closeDrawer()"><span class="drawer-item-icon">🌾</span>مكرمشة سميد</div>
+    <div class="drawer-item" onclick="showSection('luqaimat');closeDrawer()"><span class="drawer-item-icon">🍩</span>لقيمات</div>
+    <div class="drawer-item" onclick="showSection('cheese');closeDrawer()"><span class="drawer-item-icon">🧀</span>أصابع جبن</div>
+    <div class="drawer-item" onclick="showSection('tea');closeDrawer()"><span class="drawer-item-icon">🍵</span>شاي</div>
+    <div class="drawer-item" onclick="showSection('box');closeDrawer()"><span class="drawer-item-icon">📦</span>بوكس جمعات</div>
+    <div class="drawer-item" onclick="showSection('dates');closeDrawer()"><span class="drawer-item-icon">🌴</span>بلح مشوي</div>
+  </nav>
+</div>
+
+<!-- HOME PAGE -->
+<div id="home" class="page active">
+  <div class="header">
+    <button class="hamburger-btn" id="hambHome" onclick="openDrawer()">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="brand-name">كرمشة</div>
+    <div class="header-subtitle">مذاق أصيل في كل لقمة</div>
+  </div>
+  <div class="main-content">
+    <div class="home-grid">
+      <div class="home-card" onclick="showSection('khalia')">
+        <div class="home-card-thumb"><img src="خلية.jpg" alt="خلية نحل"></div>
+        <div class="home-card-label">خلية نحل</div>
+      </div>
+      <div class="home-card" onclick="showSection('sambosa')">
+        <div class="home-card-thumb"><img src="سمبوسة.jpg" alt="سمبوسة"></div>
+        <div class="home-card-label">سمبوسة</div>
+      </div>
+      <div class="home-card" onclick="showSection('fatayer')">
+        <div class="home-card-thumb"><img src="فطائر.jpg" alt="فطائر"></div>
+        <div class="home-card-label">فطائر</div>
+      </div>
+      <div class="home-card" onclick="showSection('makramsha')">
+        <div class="home-card-thumb"><img src="مكرمشة سميد.jpg" alt="مكرمشة سميد"></div>
+        <div class="home-card-label">مكرمشة سميد</div>
+      </div>
+      <div class="home-card" onclick="showSection('luqaimat')">
+        <div class="home-card-thumb"><img src="لقيمات.jpg" alt="لقيمات"></div>
+        <div class="home-card-label">لقيمات</div>
+      </div>
+      <div class="home-card" onclick="showSection('cheese')">
+        <div class="home-card-thumb"><img src="اصابع جبن.jpg" alt="أصابع جبن"></div>
+        <div class="home-card-label">أصابع جبن</div>
+      </div>
+      <div class="home-card" onclick="showSection('tea')">
+        <div class="home-card-thumb"><img src="شاي.jpg" alt="شاي"></div>
+        <div class="home-card-label">شاي</div>
+      </div>
+      <div class="home-card" onclick="showSection('box')">
+        <div class="home-card-thumb"><img src="بوكس الجمعات.jpg" alt="بوكس جمعات"></div>
+        <div class="home-card-label">بوكس جمعات</div>
+      </div>
+      <div class="home-card" onclick="showSection('dates')">
+        <div class="home-card-thumb"><img src="بلح مشوي.jpg" alt="بلح مشوي"></div>
+        <div class="home-card-label">بلح مشوي</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION PAGE -->
+<div id="section-page" class="page">
+  <div class="header">
+    <button class="hamburger-btn" id="hambSection" onclick="openDrawer()">
+      <span></span><span></span><span></span>
+    </button>
+    <button class="back-btn visible" onclick="goHome()">← رجوع</button>
+    <div class="brand-name" id="section-title" style="font-size:1.2rem;">سمبوسة</div>
+  </div>
+  <div class="main-content">
+    <div id="products-container" class="products-grid"></div>
+  </div>
+</div>
+
+<div class="address-bar">
+  <i class="fa-solid fa-location-dot"></i>
+  العنوان: يرجى تحديث العنوان هنا
+</div>
+
+<div class="footer">
+  <a href="tel:0557308893" class="social-btn">
+    <div class="social-icon"><i class="fa-solid fa-phone"></i></div>
+    <span>اتصال</span>
+  </a>
+  <a href="https://www.snapchat.com/add/kaa_ii9" target="_blank" class="social-btn">
+    <div class="social-icon"><i class="fa-brands fa-snapchat"></i></div>
+    <span>سناب شات</span>
+  </a>
+  <a href="https://www.tiktok.com/@ka_ii9?_r=1&_t=ZS-96eqVYHNW30" target="_blank" class="social-btn">
+    <div class="social-icon"><i class="fa-brands fa-tiktok"></i></div>
+    <span>تيك توك</span>
+  </a>
+</div>
+
+<script>
+const sections = {
+  khalia:{title:"خلية نحل",products:[
+    {name:"خلية بيكان",img:"خليه 3.png",sizes:[{label:"وسط",price:"23 ريال"},{label:"كبير",price:"33 ريال"}]},
+    {name:"خلية نستلة وقرفة",img:"خلية 2.png",sizes:[{label:"وسط",price:"18 ريال"},{label:"كبير",price:"28 ريال"}]},
+    {name:"خلية كلاسيك",img:"خليه 1.jpg",sizes:[{label:"وسط",price:"18 ريال"},{label:"كبير",price:"28 ريال"}]}
+  ]},
+  sambosa:{title:"سمبوسة",products:[
+    {name:"سمبوسة جبن كبير",img:"سمبوسة (1).jpg",sizes:[{label:"20 حبة ",price:"30 ريال"}]},
+    {name:"سمبوسة جبن صغير",img:"سمبوسة (1).png",sizes:[{label:"12 حبة",price:"18 ريال"}]},
+    {name:"سمبوسة دجاج كبير",img:"سمبوسة (1).jpg",sizes:[{label:"20 حبة ",price:"30 ريال"}]},
+    {name:"سمبوسة دجاج صغير",img:"سمبوسة (1).png",sizes:[{label:"12 حبة",price:"18 ريال"}]},
+  ]},
+  fatayer:{title:"فطائر",products:[
+    {name:"فطائر كبير",img:"فطائر (2).jpg",sizes:[{label:"كبير",price:"48 ريال"}]},
+    {name:"فطائر صغير",img:"بوكس جمعات (1).png",sizes:[{label:"صغير",price:"32 ريال"}]}
+  ]},
+  makramsha:{title:"مكرمشة سميد",products:[
+    {name:"مكرمشة سميد",img:"مكرمشة.jpg",sizes:[{label:"سعر",price:"48 ريال"}]}
+  ]},
+  luqaimat:{title:"لقيمات",products:[
+    {name:"لقيمات",img:"لقيمات (2).jpg",sizes:[{label:"صغير",price:"15 ريال"},{label:"وسط",price:"25 ريال"},{label:"كبير",price:"35 ريال"}]},
+    {name:"لقيمات",img:"لقيمات (1).jpg",sizes:[{label:"كندر",price:"2 ريال"},{label:"لوتس",price:"2 ريال"}]}
+  ]},
+  cheese:{title:"أصابع جبن",products:[
+    {name:"أصابع جبن",img:"اصابع الجبن.jpg",sizes:[{label:"20 حبة",price:"18 ريال"},{label:"30 حبة",price:"28 ريال"},{label:"40 حبة",price:"38 ريال"}]}
+  ]},
+  tea:{title:"شاي",products:[
+    {name:"كوب شاي",img:"شاي (1).png",sizes:[{label:"سعر",price:"3 ريال"}]},
+    {name:"بوكس شاي",img:"شاي (2).png",sizes:[{label:"لتر ونص",price:"25 ريال"}]}
+  ]},
+  box:{title:"بوكس جمعات",products:[
+    {name:"بوكس حالي للجمعات",img:"بوكس حالي للجمعات.jpg",sizes:[{label:"سعر",price:"45 ريال"}]},
+    {name:"بوكس ميني خلية للجمعات",img:"بوكس جمعات (2).png",sizes:[{label:"سعر",price:"45 ريال"}]}
+  ]},
+  dates:{title:"بلح مشوي",products:[
+    {name:"بلح مشوي",img:"بلح مشوي.png",sizes:[{label:"صغير",price:"15 ريال"},{label:"كبير",price:"30 ريال"}]}
+  ]}
+};
+
+function openDrawer(){
+  document.getElementById("overlay").classList.add("open");
+  document.getElementById("drawer").classList.add("open");
+  document.querySelectorAll(".hamburger-btn").forEach(b=>b.classList.add("open"));
+}
+function closeDrawer(){
+  document.getElementById("overlay").classList.remove("open");
+  document.getElementById("drawer").classList.remove("open");
+  document.querySelectorAll(".hamburger-btn").forEach(b=>b.classList.remove("open"));
+}
+
+function showSection(key){
+  const data = sections[key];
+  document.getElementById("section-title").textContent = data.title;
+
+  const container = document.getElementById("products-container");
+  container.innerHTML = "";
+  data.products.forEach((p)=>{
+    const card = document.createElement("div");
+    card.className = "product-card";
+    const defaultImg = p.img || "";
+
+    const sizesHtml = p.sizes && p.sizes.length
+      ? `<div class="sizes-row">${p.sizes.map(s=>`<div class="size-badge"><span class="size-label">${s.label}</span><span class="size-price">${s.price}</span></div>`).join('')}</div>`
+      : (p.price ? `<div class="product-price">${p.price}</div>` : '');
+
+    card.innerHTML = `
+      <div class="product-img-wrap">
+        ${defaultImg
+          ? `<img src="${defaultImg}" alt="${p.name}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+             <div class="product-img-placeholder" style="display:none;"><div class="upload-icon">🍽️</div></div>`
+          : `<div class="product-img-placeholder"><div class="upload-icon">🍽️</div></div>`}
+      </div>
+      <div class="product-info">
+        <div class="product-name">${p.name}</div>
+        ${sizesHtml}
+      </div>
+    `;
+    container.appendChild(card);
+  });
+
+  document.getElementById("home").classList.remove("active");
+  document.getElementById("section-page").classList.add("active");
+  window.scrollTo(0,0);
+}
+
+function goHome(){
+  document.getElementById("section-page").classList.remove("active");
+  document.getElementById("home").classList.add("active");
+  window.scrollTo(0,0);
+}
+</script>
+</body>
+</html>
